@@ -1,3 +1,4 @@
 {
-  "PROJECT_DIR": "/Path_to_your_Project_Folder/DFUTissueSegNet/"
+  "PROJECT_DIR": "/Path_to_your_Project_Folder/DFUTissueSegNet/",
+  "DATA_DIR": "/Path_to_your_Data_Folder/DFUTissue/"
 }
