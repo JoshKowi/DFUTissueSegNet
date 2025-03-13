@@ -1,0 +1,14 @@
+#IDE
+*.idea
+
+# Pycache
+*__pycache__
+
+# checkpoints
+**/.ipynb_checkpoints/
+
+# Temporary Files for personal purposes
+commands.txt
+
+# CONFIG
+config.json

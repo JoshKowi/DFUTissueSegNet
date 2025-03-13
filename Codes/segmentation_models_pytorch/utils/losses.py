@@ -73,7 +73,13 @@ class BCEWithLogitsLoss(nn.BCEWithLogitsLoss, base.Loss):
 
 # =======================================================================
 import sys
-sys.path.append('/content/drive/MyDrive/Wound_tissue_segmentation/wound_lib/segmentation_models_pytorch/losses')
+import json
+
+with open("config.json", "r") as f:
+    config = json.load(f)
+PROJECT_DIR = config["PROJECT_DIR"]
+
+sys.path.append(PROJECT_DIR + 'Codes/segmentation_models_pytorch/losses')
 
 from typing import Optional
 from functools import partial
