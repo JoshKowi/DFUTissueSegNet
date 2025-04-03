@@ -22,8 +22,6 @@ from copy import deepcopy
 from datetime import datetime
 import torch.nn.functional as F
 
-%matplotlib inline
-
 
 class Dataset(BaseDataset):
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
