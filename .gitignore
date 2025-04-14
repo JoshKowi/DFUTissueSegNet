@@ -9,6 +9,14 @@
 
 # Temporary Files for personal purposes
 commands.txt
+*.sh
 
 # CONFIG
 config.json
+
+# Data, Predictions
+DFUTissue/*
+DFUTissue*
+logs
+output*
+
