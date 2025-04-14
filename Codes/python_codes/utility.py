@@ -1,5 +1,6 @@
 # get local path to project
 import json
+import shutil
 import sys
 import os
 
@@ -24,7 +25,9 @@ import matplotlib.pyplot as plt
 import os
 from copy import deepcopy
 from datetime import datetime
+import time
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 import segmentation_models_pytorch.utils.losses as losses
 print(losses.__file__)
@@ -109,7 +112,52 @@ class Dataset(BaseDataset):
     def __len__(self):
         return len(self.ids)
 
+class Dataset_without_masks(BaseDataset):
+    """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
 
+    Args:
+        images_dir (str): path to images folder
+        masks_dir (str): path to segmentation masks folder
+        augmentation (albumentations.Compose): data transfromation pipeline
+            (e.g. flip, scale, etc.)
+        preprocessing (albumentations.Compose): data preprocessing
+            (e.g. noralization, shape manipulation, etc.)
+
+    """
+
+    def __init__(
+            self,
+            list_IDs,
+            images_dir,
+            preprocessing=None,
+            resize=(False, (256, 256)), # To resize, the first value has to be True
+            n_classes:int=4,
+    ):
+        self.ids = list_IDs
+        self.images_fps = [os.path.join(images_dir, image_id) for image_id in self.ids]
+
+        self.preprocessing = preprocessing
+        self.resize = resize
+        self.n_classes = n_classes
+
+    def __getitem__(self, i):
+
+        # read data
+        image = cv2.imread(self.images_fps[i])
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        if self.resize[0]:
+            image = cv2.resize(image, self.resize[1], interpolation=cv2.INTER_NEAREST)
+
+        # apply preprocessing
+        if self.preprocessing:
+            sample = self.preprocessing(image=image)
+            image = sample['image']
+
+        return image
+
+    def __len__(self):
+        return len(self.ids)
 
 def get_training_augmentation():
     train_transform = [
@@ -231,9 +279,54 @@ def save(model_path, epoch, model_state_dict, optimizer_state_dict):
 dice_loss = losses.DiceLoss()
 focal_loss = losses.FocalLoss()
 total_loss = base.SumOfLosses(dice_loss, focal_loss)
+dce_loss = losses.DynamicCEAndSCELoss() # dynamic CE
 
 # Metrics
 metrics = [
     metrics.IoU(threshold=0.5),
     metrics.Fscore(threshold=0.5),
 ]
+
+
+def read_names(text_file):
+  """This function reads names from a text file"""
+  with open(text_file, "r") as f:
+    names = f.readlines()
+    names = [name.split('\n')[0] for name in names] # remove \n (newline)
+
+  return names
+
+# Create a function to read names from a text file, and add extensions
+def read_names_ext(txt_file, ext=".png"):
+  with open(txt_file, "r") as f: names = f.readlines()
+  
+  names = [name.strip("\n") for name in names] # remove newline
+  # Names are without extensions. So, add extensions
+  names = [name + ext for name in names]
+
+  return names
+
+def delt(dir, names):
+  """This function deletes files specified in (names) from a directory (dir)"""
+  for name in names:
+    if os.path.exists(os.path.join(dir, name)): os.remove(os.path.join(dir, name))
+
+def copy(dir_src, dir_dst, names):
+  """This function copy files specified in (names) from (dir_src) to (dir_dst)"""
+  for name in names:
+    shutil.copy(os.path.join(dir_src, name), os.path.join(dir_dst, name))
+
+def copy_all(dir_src, dir_dst):
+    """This function copy all files from (dir_src) to (dir_dst)"""
+    for name in os.listdir(dir_src):
+        shutil.copy(os.path.join(dir_src, name), os.path.join(dir_dst, name))
+
+#. Could restore the 50 predictions that were used for good training run after making new predictions on all images.
+def replace(dir_ann_phase_prev, dir_ann_phase_current, prev_phase_names):
+  """
+  dir_ann_phase_prev: Director of annotations from previous training phase
+  dir_ann_phase_current: Director of annotations of current training phase
+  prev_phase_names: Names of previous training phase
+  """
+  delt(dir_ann_phase_current, prev_phase_names) # delete files from the train directory
+  copy(dir_ann_phase_prev, dir_ann_phase_current, prev_phase_names) # replace annotations of current phase by the prev phase
