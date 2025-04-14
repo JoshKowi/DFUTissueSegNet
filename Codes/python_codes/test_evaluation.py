@@ -274,3 +274,19 @@ def evaluate_on_test_data(
         print(f'model name = {model_name}', file=f)
 
     return save_dir_pred_pal_cat, sdice
+
+if __name__ == "__main__":
+
+    MODEL_NAME = 'MiT+pscse_padded_mit_b3_unsup50_2025-04-13_01-04-16_seed_3429_selfSupervised'
+    x_test_dir = DATA_PATH + 'Labeled/Padded/Images/Test/',
+    y_test_dir = DATA_PATH + 'Labeled/Padded/Annotations/Test/',
+    list_IDs_test = read_names_ext(DATA_PATH + 'texts/test_names.txt'),
+    save_pred = True
+
+    evaluate_on_test_data(MODEL_NAME,
+                           x_test_dir=x_test_dir,
+                           y_test_dir=y_test_dir,
+                           list_IDs_test=list_IDs_test,
+                           save_pred=save_pred,
+                           )
+    
