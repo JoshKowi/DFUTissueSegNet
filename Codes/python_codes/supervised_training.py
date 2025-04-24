@@ -80,7 +80,7 @@ def execute_supervised_training():
     print('No. of test images: ', len(list_IDs_test))
 
     # Create a unique model name
-    model_name = BASE_MODEL + '_padded_aug_' + ENCODER + '_sup_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    model_name = BASE_MODEL + '_padded_aug_' + ENCODER + '_sup_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S_seed') + str(seed)
     print(model_name)
 
     # Default images

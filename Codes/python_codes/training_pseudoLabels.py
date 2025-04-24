@@ -25,28 +25,33 @@ def plot_training_stats(training_stats, starting_time=None):
     test_scores = [entry['test_dice'] for entry in training_stats]
     labels = [entry['model_name'] for entry in training_stats]
 
-    plt.figure(figsize=(10, 4))
-
-    plt.subplot(1, 2, 1)
-    plt.plot(val_losses, marker='o', label='Val Loss')
-    plt.xticks(ticks=range(len(labels)), labels=labels, rotation=45)
-    plt.title('Validation Loss')
-    plt.legend()
-
-    plt.subplot(1, 2, 2)
-    plt.plot(test_scores, marker='o', color='green', label='Test Score')
-    plt.xticks(ticks=range(len(labels)), labels=labels, rotation=45)
-    plt.title('Test Score')
-    plt.legend()
-
-    plt.tight_layout()
-    plt.savefig(DATA_PATH + 'plots/' + starting_time + '_plot.png')
-    plt.close()
-
     with open(DATA_PATH + 'plots/' + starting_time + '_training_stats.csv', 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['model_name', 'val_loss', 'test_dice'])
         writer.writeheader()
         writer.writerows(training_stats)
+
+
+    plt.figure(figsize=(10, 4))
+
+    fig, ax1 = plt.subplots(figsize=(10, 4))
+
+    # Achse 1: Val Loss (linke Y-Achse)
+    ax1.plot(val_losses, marker='o', color='blue', label='Val Loss')
+    ax1.set_xlabel('Model')
+    ax1.set_ylabel('Validation Loss', color='blue')
+    ax1.tick_params(axis='y', labelcolor='blue')
+    ax1.set_xticks(range(len(labels)))
+    ax1.set_xticklabels(labels, rotation=45)
+
+    # Achse 2: Test Score (rechte Y-Achse)
+    ax2 = ax1.twinx()
+    ax2.plot(test_scores, marker='o', color='green', label='Test Score')
+    ax2.set_ylabel('Test Score', color='green')
+    ax2.tick_params(axis='y', labelcolor='green')
+
+    plt.tight_layout()
+    plt.savefig(DATA_PATH + 'plots/' + starting_time + '_plot.png')
+    plt.close()
 
 
 def train_supervised_model(number_training_runs):
@@ -138,7 +143,7 @@ def main():
 
     # Continue training until the validation loss does not improve
     i = 2
-    while(i < 7):
+    while(i < 12):
         # Let the best model generate pseudo labels from the unlabeled data
         pseudo_labels_from_ss_model = generate_pseudo_labels(best_ss_model_name)
 
